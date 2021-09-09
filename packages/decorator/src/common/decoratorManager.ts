@@ -23,7 +23,13 @@ import {
   INVALID_DECORATOR_OPERATION,
 } from './errMsg';
 import { Metadata } from './metadata';
-import { getParamNames, classNamed, isNullOrUndefined, isClass } from '../util';
+import {
+  getParamNames,
+  classNamed,
+  isNullOrUndefined,
+  isClass,
+  generateRandomId,
+} from '../util';
 
 const debug = require('util').debuglog('decorator:manager');
 
@@ -69,6 +75,10 @@ export class DecoratorManager extends Map {
 
   static getDecoratorMethodKey(decoratorNameKey: DecoratorKey) {
     return decoratorNameKey.toString() + '_METHOD';
+  }
+
+  static getDecoratorClsExtendedKey(decoratorNameKey: DecoratorKey) {
+    return decoratorNameKey.toString() + '_EXT';
   }
 
   static getDecoratorClsMethodPrefix(decoratorNameKey: DecoratorKey) {
@@ -437,6 +447,48 @@ export function attachClassMetadata(
 }
 
 const testKeyMap = new Map<DecoratorKey, Error>();
+
+/**
+ * get data from class assign
+ * @param decoratorNameKey
+ * @param target
+ */
+export function getClassExtendedMetadata(
+  decoratorNameKey: DecoratorKey,
+  target
+) {
+  const extKey = DecoratorManager.getDecoratorClsExtendedKey(decoratorNameKey);
+  let metadata = manager.getMetadata(extKey, target);
+  if (metadata !== undefined) {
+    return metadata;
+  }
+  const father = Reflect.getPrototypeOf(target);
+  if (father.constructor !== Object) {
+    metadata = mergeMeta(
+      getClassExtendedMetadata(decoratorNameKey, father),
+      manager.getMetadata(decoratorNameKey, target)
+    );
+  }
+  manager.saveMetadata(extKey, metadata || null, target);
+  return metadata;
+}
+
+function mergeMeta(target: any, src: any) {
+  if (!target) {
+    target = src;
+    src = null;
+  }
+  if (!target) {
+    return null;
+  }
+  if (Array.isArray(target)) {
+    return target.concat(src || []);
+  }
+  if (typeof target === 'object') {
+    return Object.assign({}, target, src);
+  }
+  throw new Error('can not merge meta that type of ' + typeof target);
+}
 
 /**
  * get data from class
@@ -981,7 +1033,8 @@ export function savePropertyInject(opts: InjectOptions) {
       isClass(type.originDesign) &&
       isProvide(type.originDesign)
     ) {
-      identifier = getProviderId(type.originDesign);
+      identifier =
+        getProviderUUId(type.originDesign) ?? getProviderId(type.originDesign);
     }
     if (!identifier) {
       identifier = opts.targetKey;
@@ -1045,11 +1098,14 @@ export function saveProviderId(
     identifier = classNamed(target.name);
   }
 
+  const uuid = generateRandomId();
+
   Reflect.defineMetadata(
     TAGGED_CLS,
     {
       id: identifier,
       originName: target.name,
+      uuid,
     },
     target
   );
@@ -1066,4 +1122,14 @@ export function saveProviderId(
  */
 export function isProvide(target: any): boolean {
   return Reflect.hasOwnMetadata(TAGGED_CLS, target);
+}
+
+export function getProviderUUId(module): string {
+  const metaData: any = Reflect.getMetadata(
+    TAGGED_CLS,
+    module
+  ) as TagClsMetadata;
+  if (metaData && metaData.uuid) {
+    return metaData.uuid;
+  }
 }

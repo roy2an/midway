@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [2.13.1](https://github.com/midwayjs/midway/compare/v2.13.0...v2.13.1) (2021-09-08)
+
+
+### Bug Fixes
+
+* requestContainer missing ctx inject in component ([#1280](https://github.com/midwayjs/midway/issues/1280)) ([34166fb](https://github.com/midwayjs/midway/commit/34166fb9e5bd1b08c3894de25c8a7a0c3e9a8655))
+
+
+
+
+
+# [2.13.0](https://github.com/midwayjs/midway/compare/v2.12.9...v2.13.0) (2021-09-07)
+
+
+### Features
+
+* add cos component ([#1271](https://github.com/midwayjs/midway/issues/1271)) ([c070e01](https://github.com/midwayjs/midway/commit/c070e019d20ad7a106f594f114325e5b7e6d26ad))
+* add redis component ([#1270](https://github.com/midwayjs/midway/issues/1270)) ([cea81a8](https://github.com/midwayjs/midway/commit/cea81a8a1a775be90863b40616f8b86d0df6ec06))
+
+
+
+
+
 ## [2.12.9](https://github.com/midwayjs/midway/compare/v2.12.8...v2.12.9) (2021-09-01)
 
 
